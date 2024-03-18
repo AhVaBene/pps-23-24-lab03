@@ -10,12 +10,13 @@ object Persons:
     def name(p: Person): String = p match
       case Student(n, _) => n
       case Teacher(n, _) => n
-
+    def getCourseName(p: Person): String = p match
+      case Teacher(_, c) => c
+      case _ => "nil"
     // a method outside the Person module
     def isStudent(p: Person): Boolean = p match
       case Student(_, _) => true
       case _ => false
-
 @main def tryPersons =
-  import Persons.* // to work with Optionals (to see Optional type)
-  import Person.* // to directly access algorithms
+  import Persons.*
+  import Person.*
