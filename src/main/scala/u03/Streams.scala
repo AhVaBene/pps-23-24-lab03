@@ -1,5 +1,8 @@
 package u03
 
+import scala.math._
+import u03.Streams.Stream.pellIterate
+
 object Streams extends App :
 
   import Sequences.*
@@ -37,11 +40,24 @@ object Streams extends App :
     def iterate[A](init: => A)(next: A => A): Stream[A] =
       cons(init, iterate(next(init))(next))
 
+    def pellIterate(n1: => Int)(n2: => Int): Stream[Int] = n2 match
+      case -1 => cons(0, pellIterate(0)(0))
+      case 0 => cons(1, pellIterate(0)(1))
+      case _ =>
+        val n = n2 * 2 + n1
+        cons(n, pellIterate(n2)(n))
+
     // Task 3
 
     def takeWhile[A](stream: Stream[A])(pred: A => Boolean): Stream[A] = stream match
       case Cons(head, tail) if pred(head()) => cons(head(), takeWhile(tail())(pred))
       case _ => Empty()
+
+    def fill[A](n: Int)(k: A): Stream[A] =
+      def _fill(s: Stream[A])(n: Int)(k: A): Stream[A] = n match
+        case n if n > 0 => _fill(cons(k, s))(n - 1)(k)
+        case _ => s
+      _fill(empty())(n)(k)
 
   end Stream
 
@@ -56,3 +72,11 @@ object Streams extends App :
 
   lazy val corec: Stream[Int] = Stream.cons(1, corec) // {1,1,1,..}
   println(Stream.toList(Stream.take(corec)(10))) // [1,1,..,1]
+
+  val s = Stream.iterate(0)(_ + 1)
+  println(Stream.toList(Stream.takeWhile(s)(_ < 5))) // Cons(0, Cons(1, Cons(2, Cons(3, Cons(4, Nil())))))
+
+  println(Stream.toList(Stream.fill(3)("a"))) // Cons(a, Cons(a, Cons(a, Nil())))
+
+  val pell: Stream[Int] = pellIterate(0)(-1) // 0, 1, 2, 5, 12, 29, 70, 169, 408, 985, 2378, 5741, 13860...
+  println(Stream.toList(Stream.take(pell)(10))) // Cons(0, Cons(1, Cons(2, Cons(5, Cons(12, Nil()))))
