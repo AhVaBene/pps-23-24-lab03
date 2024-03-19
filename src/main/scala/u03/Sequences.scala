@@ -5,6 +5,8 @@ import u03.Optionals.Optional
 import u03.Persons.*
 import u03.Persons.Person.isStudent
 import u03.Persons.Person.getCourseName
+import u03.Optionals.Optional.isEmpty
+import u03.Optionals.Optional.orElse
 
 object Sequences: // Essentially, generic linkedlists
   
@@ -29,7 +31,7 @@ object Sequences: // Essentially, generic linkedlists
       case Cons(_, t)            => filter(t)(pred)
       case Nil()                 => Nil()
 
-    //def filter2[A](l1: Sequence[A])(pred: A => Boolean): Sequence[A] = flatMap(l1)(a => Cons(pred(a), Nil()))
+    //def filter2[A](l1: Sequence[A])(pred: A => Boolean): Sequence[A] = filter(flatMap(l1)(a => l1))(pred)
 
     // Lab 03
     def zip[A, B](first: Sequence[A], second: Sequence[B]): Sequence[(A, B)] = (first, second) match
@@ -50,7 +52,12 @@ object Sequences: // Essentially, generic linkedlists
       case Cons(h, Nil()) => mapper(h)
       case Nil() => Nil()
 
-    def min(l: Sequence[Int]): Optional[Int] = ???
+    def min(l: Sequence[Int]): Optional[Int] = 
+      def _min(l: Sequence[Int], min: Optional[Int]): Optional[Int] = l match
+        case Cons(h, t) if isEmpty(min) | h < orElse(min, 100) => _min(t, Optional.Just(h))
+        case Cons(_, t) => _min(t, min)
+        case _ => min
+      _min(l, Optional.Empty())
     
     def getCourses(l: Sequence[Person]): Sequence[String] = map(filter(l)(!isStudent(_)))(p => getCourseName(p))
 
@@ -60,7 +67,7 @@ object Sequences: // Essentially, generic linkedlists
   import Sequences.* 
   import Persons.* 
   val l = Sequence.Cons(10, Sequence.Cons(20, Sequence.Cons(30, Sequence.Nil())))
-  println(Sequence.sum(l)) // 30
+  println(Sequence.sum(l)) // 60
 
   import Sequence.*
 
@@ -83,7 +90,7 @@ object Sequences: // Essentially, generic linkedlists
   println(flatMap(lst)(v => Cons(v + 1, Nil()))) // Cons(11, Cons(21, Cons(31, Nil())))
   println(flatMap(lst)(v => Cons(v + 1, Cons(v + 2, Nil())))) // Cons(11, Cons(12, Cons(21, Cons(22, Cons(31, Cons(32, Nil()))))))
 
-  //println(min(Cons(10, Cons(25, Cons(20, Nil()))))) // Maybe(10)
+  println(min(Cons(10, Cons(25, Cons(20, Nil()))))) // Maybe(10)
 
   val p = Sequence.Cons(Person.Teacher("name", "Maths"), Cons(Person.Teacher("name", "IT"),
    Cons(Person.Teacher("name", "Italian"), Cons(Person.Student("name", 2001), Cons(Person.Teacher("name", "Science"), Nil())))))
